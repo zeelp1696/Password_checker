@@ -3,183 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 Password Strength Checker with Hash Generator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Neural Password Analyzer</title>
+    <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- HEADER -->
-        <h1>🔐 Password Strength Checker</h1>
-        <p style="color: #666; font-size: 14px;">Check password strength & generate secure hashes</p>
-        
-        <!-- PASSWORD INPUT FORM -->
-        <form method="POST">
-            <input 
-                type="text" 
-                name="password" 
-                placeholder="Enter your password here..." 
-                required
-                autocomplete="off"
-            >
-            <button type="submit">Check Strength & Generate Hashes</button>
+    <!-- Animated Background Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="neural-container">
+        <!-- Floating Header with Glitch Effect -->
+        <div class="floating-header">
+            <div class="glitch-wrapper">
+                <div class="glitch" data-text="NEURAL ANALYZER">NEURAL ANALYZER</div>
+            </div>
+            <div class="subtitle">AI-Powered Password Security System</div>
+        </div>
+
+        <!-- Password Input Section -->
+        <form method="POST" class="input-zone">
+            <div class="input-wrapper">
+                <div class="input-glow"></div>
+                <input 
+                    type="text" 
+                    name="password" 
+                    class="neural-input"
+                    placeholder="Enter password sequence..."
+                    required
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <div class="input-border"></div>
+            </div>
+            
+            <button type="submit" class="morph-button">
+                <span class="button-content">
+                    <span class="button-icon">⚡</span>
+                    <span class="button-text">Analyze & Generate Hashes</span>
+                    <span class="button-glow"></span>
+                </span>
+            </button>
         </form>
 
-        <!-- ============================================ -->
-        <!-- SECTION 1: STRENGTH RESULTS (if form submitted) -->
-        <!-- ============================================ -->
+        <!-- Results Display -->
         {% if score is not none %}
-        <div class="results-section">
-            <h2>💪 Strength Analysis</h2>
-            
-            <!-- Strength Label -->
-            <div class="label" style="color: {{ color }};">
-                {{ label }}
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="bar-container">
-                <div class="bar" style="width: {{ width }}; background-color: {{ color }};"></div>
+        
+        <!-- Strength Analysis Card -->
+        <div class="analysis-card">
+            <div class="card-header">
+                <div class="header-icon">🧠</div>
+                <div class="header-text">Cognitive Strength Analysis</div>
             </div>
             
-            <!-- Score Display -->
-            <p style="margin-top: 10px; font-weight: bold;">
-                Score: {{ score }}/5
-            </p>
+            <!-- Dynamic Strength Indicator -->
+            <div class="strength-display">
+                <div class="strength-label" data-strength="{{ label }}">
+                    {{ label }}
+                </div>
+                <div class="neural-score">
+                    <span class="score-number">{{ score }}</span>
+                    <span class="score-max">/5</span>
+                </div>
+            </div>
 
-            <!-- Suggestions (if any) -->
+            <!-- Liquid Progress Bar -->
+            <div class="liquid-container">
+                <div class="liquid-bar" style="--fill: {{ width }}; --color: {{ color }};">
+                    <div class="liquid-wave"></div>
+                    <div class="liquid-wave wave-2"></div>
+                </div>
+                <div class="progress-markers">
+                    <span>Weak</span>
+                    <span>Moderate</span>
+                    <span>Strong</span>
+                </div>
+            </div>
+
+            <!-- AI Suggestions -->
             {% if suggestions %}
-            <div class="suggestions">
-                <h3>💡 Suggestions to Improve:</h3>
-                <ul>
+            <div class="suggestions-panel">
+                <div class="panel-title">
+                    <span class="ai-icon">🤖</span>
+                    AI Recommendations
+                </div>
+                <div class="suggestion-list">
                     {% for suggestion in suggestions %}
-                    <li>{{ suggestion }}</li>
+                    <div class="suggestion-item">
+                        <span class="suggestion-marker"></span>
+                        <span class="suggestion-text">{{ suggestion }}</span>
+                    </div>
                     {% endfor %}
-                </ul>
+                </div>
             </div>
             {% else %}
-            <p class="good">✅ Your password meets all criteria!</p>
+            <div class="success-banner">
+                <div class="success-icon">✓</div>
+                <div class="success-text">Neural validation complete. All security protocols met.</div>
+            </div>
             {% endif %}
         </div>
 
-        <!-- ============================================ -->
-        <!-- SECTION 2: HASH GENERATION (NEW Phase 1!) -->
-        <!-- ============================================ -->
-        <div class="hash-section">
-            <h2>🔐 Generated Hashes</h2>
-            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">
-                Password: <strong>"{{ password }}"</strong>
-            </p>
+        <!-- Hash Generation Section -->
+        <div class="hash-matrix">
+            <div class="matrix-header">
+                <div class="header-icon">🔐</div>
+                <div class="header-text">Cryptographic Hash Matrix</div>
+            </div>
+            <div class="password-display">
+                <span class="label-text">Input Sequence:</span>
+                <span class="password-value">"{{ password }}"</span>
+            </div>
 
-            <!-- INSECURE HASHES (with warning) -->
-            <div class="hash-category insecure">
-                <h3>⚠️ Insecure Hashes (Educational Only)</h3>
-                <p class="warning-text">
-                    ❌ NEVER use these for storing real passwords! 
-                    They are too fast and easy to crack.
-                </p>
+            <!-- Insecure Hashes Section -->
+            <div class="hash-section danger-zone">
+                <div class="section-label">
+                    <span class="warning-pulse">⚠</span>
+                    <span>Legacy Algorithms (Educational Only)</span>
+                </div>
+                <div class="danger-notice">
+                    These algorithms are cryptographically broken. Never use for production.
+                </div>
 
                 <!-- MD5 Hash -->
-                <div class="hash-item">
-                    <label>MD5:</label>
-                    <div class="hash-display">
-                        <input 
-                            type="text" 
-                            value="{{ hashes.insecure.md5 }}" 
-                            readonly 
-                            id="md5-hash"
-                            class="hash-input"
-                        >
-                        <button onclick="copyHash('md5-hash')" class="copy-btn">
-                            📋 Copy
+                <div class="hash-block">
+                    <div class="hash-label">
+                        <span class="algo-tag md5">MD5</span>
+                        <span class="status-indicator deprecated">DEPRECATED</span>
+                    </div>
+                    <div class="hash-display-group">
+                        <div class="hash-value" id="md5-hash">{{ hashes.insecure.md5 }}</div>
+                        <button type="button" onclick="copyHash('md5-hash')" class="copy-chip">
+                            <span class="copy-icon">📋</span>
+                            <span class="copy-text">Copy</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- SHA-256 Hash -->
-                <div class="hash-item">
-                    <label>SHA-256:</label>
-                    <div class="hash-display">
-                        <input 
-                            type="text" 
-                            value="{{ hashes.insecure.sha256 }}" 
-                            readonly 
-                            id="sha256-hash"
-                            class="hash-input"
-                        >
-                        <button onclick="copyHash('sha256-hash')" class="copy-btn">
-                            📋 Copy
+                <div class="hash-block">
+                    <div class="hash-label">
+                        <span class="algo-tag sha256">SHA-256</span>
+                        <span class="status-indicator deprecated">DEPRECATED</span>
+                    </div>
+                    <div class="hash-display-group">
+                        <div class="hash-value" id="sha256-hash">{{ hashes.insecure.sha256 }}</div>
+                        <button type="button" onclick="copyHash('sha256-hash')" class="copy-chip">
+                            <span class="copy-icon">📋</span>
+                            <span class="copy-text">Copy</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- SECURE HASH (with recommendation) -->
-            <div class="hash-category secure">
-                <h3>✅ Secure Hash (Use This!)</h3>
-                <p class="success-text">
-                    ✅ bcrypt is the industry standard for password storage. 
-                    It's slow, salted, and secure!
-                </p>
+            <!-- Secure Hash Section -->
+            <div class="hash-section secure-zone">
+                <div class="section-label">
+                    <span class="secure-pulse">✓</span>
+                    <span>Modern Cryptography (Recommended)</span>
+                </div>
+                <div class="secure-notice">
+                    Industry-standard adaptive hashing with automatic salting.
+                </div>
 
                 <!-- bcrypt Hash -->
-                <div class="hash-item">
-                    <label>bcrypt:</label>
-                    <div class="hash-display">
-                        <input 
-                            type="text" 
-                            value="{{ hashes.secure.bcrypt }}" 
-                            readonly 
-                            id="bcrypt-hash"
-                            class="hash-input"
-                        >
-                        <button onclick="copyHash('bcrypt-hash')" class="copy-btn">
-                            📋 Copy
+                <div class="hash-block">
+                    <div class="hash-label">
+                        <span class="algo-tag bcrypt">bcrypt</span>
+                        <span class="status-indicator secure">SECURE</span>
+                    </div>
+                    <div class="hash-display-group">
+                        <div class="hash-value" id="bcrypt-hash">{{ hashes.secure.bcrypt }}</div>
+                        <button type="button" onclick="copyHash('bcrypt-hash')" class="copy-chip primary">
+                            <span class="copy-icon">📋</span>
+                            <span class="copy-text">Copy</span>
                         </button>
                     </div>
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                        💡 Notice: Same password creates different hash each time!
-                    </p>
+                    <div class="hash-info">
+                        <span class="info-icon">💡</span>
+                        <span>Unique salt generated per hash - same input produces different outputs</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Educational Info Box -->
-            <div class="info-box">
-                <h4>🎓 What's the difference?</h4>
-                <ul style="text-align: left; font-size: 13px;">
-                    <li><strong>MD5/SHA-256:</strong> Fast algorithms = Easy to crack (billions of attempts/second)</li>
-                    <li><strong>bcrypt:</strong> Intentionally slow = Hard to crack (takes ~0.3 seconds per attempt)</li>
-                    <li><strong>Salting:</strong> bcrypt adds random data, so same password = different hash!</li>
-                </ul>
+            <!-- Educational Info Panel -->
+            <div class="knowledge-panel">
+                <div class="panel-header">
+                    <span class="knowledge-icon">🎓</span>
+                    <span>Cryptographic Knowledge Base</span>
+                </div>
+                <div class="knowledge-grid">
+                    <div class="knowledge-item">
+                        <div class="item-title">Speed vs Security</div>
+                        <div class="item-content">MD5/SHA-256 process billions of hashes/second, enabling brute-force attacks. bcrypt is intentionally slow (~300ms).</div>
+                    </div>
+                    <div class="knowledge-item">
+                        <div class="item-title">Salting Mechanism</div>
+                        <div class="item-content">bcrypt automatically generates random salt, ensuring identical passwords produce unique hashes across different users.</div>
+                    </div>
+                    <div class="knowledge-item">
+                        <div class="item-title">Adaptive Cost Factor</div>
+                        <div class="item-content">bcrypt's work factor can be increased over time to maintain security as computing power grows.</div>
+                    </div>
+                </div>
             </div>
         </div>
-        {% endif %}
 
+        {% endif %}
     </div>
 
-    <!-- ============================================ -->
-    <!-- JAVASCRIPT: Copy to Clipboard Functionality -->
-    <!-- ============================================ -->
+    <!-- JavaScript for Copy Functionality -->
     <script>
-        /**
-         * Copies hash value to clipboard when copy button is clicked
-         * @param {string} inputId - ID of the input field to copy from
-         */
-        function copyHash(inputId) {
-            // Get the input element by its ID
-            const input = document.getElementById(inputId);
+        function copyHash(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
             
-            // Select the text inside the input
-            input.select();
-            input.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback
+                const button = element.nextElementSibling;
+                const originalText = button.querySelector('.copy-text').textContent;
+                button.querySelector('.copy-text').textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.querySelector('.copy-text').textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+            });
+        }
+
+        // Parallax effect for particles
+        document.addEventListener('mousemove', (e) => {
+            const particles = document.querySelectorAll('.particle');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
             
-            // Copy to clipboard using modern API
-            navigator.clipboard.writeText(input.value).then(function() {
-                // Success! Show feedback to user
-                alert('✅ Hash copied to clipboard!');
-            }, function(err) {
-                // Fallback for older browsers
-                document.execCommand('copy');
-                alert('✅ Hash copied!');
+            particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.5;
+                const xMove = (x - 0.5) * speed * 20;
+                const yMove = (y - 0.5) * speed * 20;
+                particle.style.transform = `translate(${xMove}px, ${yMove}px)`;
+            });
+        });
+
+        // Input focus effect
+        const input = document.querySelector('.neural-input');
+        if (input) {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
             });
         }
     </script>
