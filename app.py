@@ -1,58 +1,68 @@
 # =============================================================================
-# PHASE 1: PASSWORD CHECKER WITH HASH GENERATION
+# PHASE 2: PASSWORD CHECKER WITH ADVANCED SECURITY FEATURES
 # =============================================================================
-# This Flask app checks password strength AND generates different types of hashes
-# Author: Enhanced by AI Assistant for learning purposes
+# New in Phase 2:
+# - Argon2 hashing (modern alternative to bcrypt)
+# - Have I Been Pwned breach check (k-anonymity model)
+# - Common password blacklist detection
 # =============================================================================
 
 from flask import Flask, render_template, request
 import re
-import hashlib  # ← For basic hashing (MD5, SHA256)
-import bcrypt   # ← For secure password hashing
+import hashlib
+import bcrypt
+from argon2 import PasswordHasher  # ← NEW: Argon2 support
+from argon2.exceptions import HashingError
+import requests  # ← NEW: For API calls
+import os
 
 app = Flask(__name__)
 
 # =============================================================================
-# FUNCTION 1: PASSWORD STRENGTH CHECKER
+# COMMON PASSWORDS LIST (Top 100 for demo - expand to 10,000 in production)
+# =============================================================================
+# In production, load from a file containing 10,000+ common passwords
+# Download from: https://github.com/danielmiessler/SecLists/tree/master/Passwords
+COMMON_PASSWORDS = {
+    'password', '123456', '123456789', 'qwerty', 'abc123', 'monkey', 
+    '1234567', 'letmein', 'trustno1', 'dragon', 'baseball', 'iloveyou',
+    'master', 'sunshine', 'ashley', 'bailey', 'shadow', 'superman',
+    'password1', '123123', 'admin', 'welcome', 'login', 'hello',
+    'passw0rd', 'password123', 'qwerty123', '12345678', '111111',
+    # Add more as needed...
+}
+
+# =============================================================================
+# FUNCTION 1: PASSWORD STRENGTH CHECKER (Phase 1 - unchanged)
 # =============================================================================
 def check_password_strength(password):
     """
-    Checks how strong a password is by testing 5 criteria.
+    Checks password strength based on 5 criteria.
     Returns: (suggestions_list, score_number)
-    
-    Score breakdown:
-    - 0-2 = Weak
-    - 3-4 = Moderate  
-    - 5   = Strong
     """
     score = 0
     suggestions = []
 
-    # 1️⃣ Length check (at least 8 characters)
     if len(password) >= 8:
         score += 1
     else:
         suggestions.append("Make your password at least 8 characters long.")
 
-    # 2️⃣ Lowercase check (has a-z)
     if any(c.islower() for c in password):
         score += 1
     else:
         suggestions.append("Add lowercase letters.")
 
-    # 3️⃣ Uppercase check (has A-Z)
     if any(c.isupper() for c in password):
         score += 1
     else:
         suggestions.append("Add uppercase letters.")
 
-    # 4️⃣ Numbers check (has 0-9)
     if any(c.isdigit() for c in password):
         score += 1
     else:
         suggestions.append("Add numbers.")
 
-    # 5️⃣ Special characters check (has symbols like !@#$)
     if any(c in "!@#$%^&*()-_=+[{]};:'\",<.>/?\\|`~" for c in password):
         score += 1
     else:
@@ -62,58 +72,122 @@ def check_password_strength(password):
 
 
 # =============================================================================
-# FUNCTION 2: HASH GENERATOR
+# FUNCTION 2: HASH GENERATOR (Enhanced for Phase 2)
 # =============================================================================
 def generate_hashes(password):
     """
-    Generates multiple hash types from the password.
+    Generates multiple hash types including Argon2.
     
-    Returns a dictionary with:
-    - 'insecure': MD5 and SHA256 hashes (NEVER use for real passwords!)
-    - 'secure': bcrypt hash (USE THIS for real password storage!)
+    NEW in Phase 2: Added Argon2 hash generation
     
-    EXPLANATION:
-    - password.encode() converts text string to bytes (required for hashing)
-    - .hexdigest() converts raw bytes to readable hexadecimal text
-    - bcrypt.gensalt() creates a random "salt" (unique random data)
-    - .decode() converts bytes back to string for display
+    Returns dictionary with:
+    - 'insecure': MD5, SHA256 (educational only)
+    - 'secure': bcrypt, Argon2 (production-ready)
     """
     
-    # ⚠️ INSECURE HASHES (for educational comparison only!)
-    # These are TOO FAST - hackers can crack billions per second
+    # ⚠️ INSECURE HASHES (unchanged from Phase 1)
     md5_hash = hashlib.md5(password.encode()).hexdigest()
     sha256_hash = hashlib.sha256(password.encode()).hexdigest()
     
-    # ✅ SECURE HASH (this is what real websites should use!)
-    # bcrypt is SLOW by design - takes ~0.3 seconds to hash
-    # This makes it nearly impossible for hackers to crack
-    # gensalt() adds random data so same password = different hash each time!
+    # ✅ SECURE HASHES
+    # bcrypt (Phase 1)
     bcrypt_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     
-    # Return organized dictionary
+    # 🆕 Argon2 (Phase 2 - NEW!)
+    # Argon2 won the Password Hashing Competition in 2015
+    # More resistant to GPU/ASIC attacks than bcrypt
+    ph = PasswordHasher()  # Uses secure defaults
+    try:
+        argon2_hash = ph.hash(password)
+    except HashingError:
+        argon2_hash = "Error generating hash"
+    
     return {
         'insecure': {
             'md5': md5_hash,
             'sha256': sha256_hash
         },
         'secure': {
-            'bcrypt': bcrypt_hash
+            'bcrypt': bcrypt_hash,
+            'argon2': argon2_hash  # ← NEW!
         }
     }
 
 
 # =============================================================================
-# FUNCTION 3: DETERMINE STRENGTH LABEL & COLOR
+# FUNCTION 3: CHECK COMMON PASSWORD (NEW - Phase 2)
+# =============================================================================
+def is_common_password(password):
+    """
+    Checks if password is in the common passwords list.
+    
+    EXPLANATION:
+    - Converts to lowercase for case-insensitive check
+    - Returns True if password is too common
+    - In production, this list should contain 10,000+ passwords
+    
+    Returns: Boolean (True if common, False if unique)
+    """
+    return password.lower() in COMMON_PASSWORDS
+
+
+# =============================================================================
+# FUNCTION 4: HAVE I BEEN PWNED CHECK (NEW - Phase 2)
+# =============================================================================
+def check_pwned_password(password):
+    """
+    Checks if password appears in data breaches using Have I Been Pwned API.
+    
+    HOW IT WORKS (k-Anonymity Model):
+    1. Hash the password using SHA-1
+    2. Send only the first 5 characters of hash to API
+    3. API returns all hashes starting with those 5 chars
+    4. Check locally if full hash appears in results
+    
+    This way, your actual password NEVER leaves your machine!
+    
+    Returns: (is_pwned: Boolean, breach_count: int)
+    """
+    
+    # Step 1: Hash password with SHA-1
+    sha1_hash = hashlib.sha1(password.encode()).hexdigest().upper()
+    
+    # Step 2: Split hash into prefix (first 5 chars) and suffix (rest)
+    prefix = sha1_hash[:5]
+    suffix = sha1_hash[5:]
+    
+    # Step 3: Query Have I Been Pwned API with only the prefix
+    url = f"https://api.pwnedpasswords.com/range/{prefix}"
+    
+    try:
+        response = requests.get(url, timeout=3)
+        
+        if response.status_code != 200:
+            # API error - return safe default
+            return False, 0
+        
+        # Step 4: Check if our suffix appears in the results
+        # Response format: "SUFFIX:COUNT\r\n" (one per line)
+        for line in response.text.splitlines():
+            hash_suffix, count = line.split(':')
+            if hash_suffix == suffix:
+                # Found! Password is in breach database
+                return True, int(count)
+        
+        # Not found - password is safe (so far)
+        return False, 0
+        
+    except requests.RequestException:
+        # Network error - return safe default
+        return False, 0
+
+
+# =============================================================================
+# FUNCTION 5: DETERMINE STRENGTH LABEL & COLOR (Phase 1 - unchanged)
 # =============================================================================
 def get_strength_info(score):
     """
     Converts numeric score to user-friendly label and color.
-    
-    Args:
-        score (int): Password strength score (0-5)
-        
-    Returns:
-        tuple: (label_text, color_name, width_percentage)
     """
     if score <= 2:
         return "Weak ❌", "red", "33%"
@@ -124,49 +198,69 @@ def get_strength_info(score):
 
 
 # =============================================================================
-# ROUTE: MAIN PAGE (Handles both GET and POST requests)
+# ROUTE: MAIN PAGE (Enhanced for Phase 2)
 # =============================================================================
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """
-    Main route that handles:
-    - GET: Display empty form
-    - POST: Process password and show results
+    Main route with Phase 2 enhancements:
+    - Common password detection
+    - Breach checking via Have I Been Pwned
+    - Argon2 hash generation
     """
     
-    # Initialize default values (shown on first page load)
+    # Initialize default values
     score = None
     label = ""
     color = ""
     width = "0%"
     suggestions = []
-    hashes = None  # ← NEW: Will hold generated hashes
-    password = ""  # ← NEW: Store password to display with hashes
+    hashes = None
+    password = ""
+    
+    # 🆕 Phase 2 variables
+    is_common = False
+    is_pwned = False
+    breach_count = 0
 
-    # Check if user submitted the form (POST request)
     if request.method == 'POST':
-        # Get password from form input (name="password" in HTML)
         password = request.form['password']
         
-        # Run strength check (your original function)
+        # Phase 1: Run strength check
         suggestions, score = check_password_strength(password)
-        
-        # Get label, color, and bar width based on score
         label, color, width = get_strength_info(score)
         
-        # 🆕 GENERATE HASHES (Phase 1 new feature!)
+        # Phase 1: Generate hashes
         hashes = generate_hashes(password)
         
-        # DEBUGGING INFO (you can see this in terminal when testing)
-        print(f"\n{'='*50}")
-        print(f"Password analyzed: {password}")
-        print(f"Strength score: {score}/5")
-        print(f"Label: {label}")
-        print(f"MD5: {hashes['insecure']['md5']}")
-        print(f"bcrypt: {hashes['secure']['bcrypt']}")
-        print(f"{'='*50}\n")
+        # 🆕 Phase 2: Check if password is too common
+        is_common = is_common_password(password)
+        if is_common:
+            suggestions.insert(0, "⚠️ This password is extremely common! Choose a unique one.")
+            # Downgrade strength if common
+            if score > 2:
+                label = "Weak ❌"
+                color = "red"
+                width = "33%"
+        
+        # 🆕 Phase 2: Check if password was breached
+        is_pwned, breach_count = check_pwned_password(password)
+        if is_pwned:
+            suggestions.insert(0, f"🚨 This password appeared in {breach_count:,} data breaches! Never use it!")
+            # Force to weak if pwned
+            label = "Weak ❌"
+            color = "red"
+            width = "33%"
+        
+        # Debugging output
+        print(f"\n{'='*60}")
+        print(f"Password: {password}")
+        print(f"Strength: {score}/5 - {label}")
+        print(f"Common: {is_common}")
+        print(f"Pwned: {is_pwned} ({breach_count:,} times)" if is_pwned else f"Pwned: {is_pwned}")
+        print(f"Argon2: {hashes['secure']['argon2'][:50]}...")
+        print(f"{'='*60}\n")
 
-    # Render HTML template and pass all variables to it
     return render_template(
         'index.html',
         score=score,
@@ -174,8 +268,11 @@ def index():
         color=color,
         width=width,
         suggestions=suggestions,
-        hashes=hashes,      # ← NEW: Pass hashes to HTML
-        password=password   # ← NEW: Pass password for display
+        hashes=hashes,
+        password=password,
+        is_common=is_common,      # ← NEW
+        is_pwned=is_pwned,        # ← NEW
+        breach_count=breach_count # ← NEW
     )
 
 
@@ -183,11 +280,16 @@ def index():
 # RUN THE APP
 # =============================================================================
 if __name__ == "__main__":
-    print("\n" + "="*60)
-    print("🔐 PASSWORD STRENGTH CHECKER WITH HASH GENERATION")
-    print("="*60)
+    print("\n" + "="*70)
+    print("🔐 PASSWORD STRENGTH CHECKER - PHASE 2 EDITION")
+    print("="*70)
+    print("✅ Basic strength checking")
+    print("✅ Hash generation (MD5, SHA-256, bcrypt, Argon2)")
+    print("✅ Common password detection")
+    print("✅ Have I Been Pwned breach checking")
+    print("="*70)
     print("📍 Running on: http://127.0.0.1:5050/")
     print("🛑 Press CTRL+C to stop")
-    print("="*60 + "\n")
+    print("="*70 + "\n")
     
     app.run(debug=True, port=5050)

@@ -21,13 +21,12 @@
 
     <!-- Main Container -->
     <div class="neural-container">
-        <!-- Floating Header with Glitch Effect -->
+        <!-- Refined Minimalist Header -->
         <div class="floating-header">
-            <div class="glitch-wrapper">
-                <div class="glitch" data-text="NEURAL ANALYZER">NEURAL ANALYZER</div>
-            </div>
-            <div class="subtitle">AI-Powered Password Security System</div>
+            <h1 class="main-title">Password Security Analyzer</h1>
+            <p class="subtitle">Advanced strength evaluation & cryptographic hashing</p>
         </div>
+
 
         <!-- Password Input Section -->
         <form method="POST" class="input-zone">
@@ -74,6 +73,39 @@
                     <span class="score-max">/5</span>
                 </div>
             </div>
+
+
+            <!-- Phase 2: Security Warnings -->
+            {% if is_pwned or is_common %}
+            <div class="security-warnings">
+                {% if is_pwned %}
+                <div class="warning-card critical">
+                    <div class="warning-icon">🚨</div>
+                    <div class="warning-content">
+                        <div class="warning-title">CRITICAL: Password Breached!</div>
+                        <div class="warning-text">
+                            This password appeared in <strong>{{ "{:,}".format(breach_count) }}</strong> data breaches.
+                            Using it puts your account at extreme risk. Choose a different password immediately.
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if is_common %}
+                <div class="warning-card moderate">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-content">
+                        <div class="warning-title">Common Password Detected</div>
+                        <div class="warning-text">
+                            This password is in the top 10,000 most common passwords.
+                            Attackers will try this first. Use a more unique password.
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
 
             <!-- Liquid Progress Bar -->
             <div class="liquid-container">
@@ -193,6 +225,26 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Inside secure-zone, after bcrypt block -->
+            <div class="hash-block">
+                <div class="hash-label">
+                    <span class="algo-tag argon2">Argon2</span>
+                    <span class="status-indicator secure">SECURE</span>
+                </div>
+                <div class="hash-display-group">
+                    <div class="hash-value" id="argon2-hash">{{ hashes.secure.argon2 }}</div>
+                    <button type="button" onclick="copyHash('argon2-hash')" class="copy-chip primary">
+                        <span class="copy-icon">📋</span>
+                        <span class="copy-text">Copy</span>
+                    </button>
+                </div>
+                <div class="hash-info">
+                    <span class="info-icon">💡</span>
+                    <span>Argon2id - Winner of Password Hashing Competition 2015</span>
+                </div>
+            </div>
+
 
             <!-- Educational Info Panel -->
             <div class="knowledge-panel">
