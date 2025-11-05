@@ -1,91 +1,105 @@
-## 🧠 Project Name: Password Strength Checker (Cyber Security Project)
+# Password Strength Checker + Hash Generator
 
-### 📌 Description
-
-This project checks how strong a password is using **Python** and **Flask**.
-It shows if a password is **Weak, Moderate, or Strong** with a **colored bar** (red, yellow, green) and gives **suggestions** to make the password stronger.
-It is my learning project about **cyber security basics** and **backend with Flask**.
+A Flask-based password analyzer that scores password strength on five criteria and generates MD5, SHA‑256, and bcrypt hashes. Includes copy-to-clipboard actions and a modern, lightweight UI.
 
 ---
 
-### 🚀 Features
+## Features completed
 
-✅ Checks for:
-
-* Password length (8+ characters)
-* Uppercase letters
-* Lowercase letters
-* Numbers
-* Special symbols
-
-✅ Shows a **colored bar** to show strength
-✅ Gives **tips** to improve weak passwords
-✅ Built using **Flask**, **HTML**, and **CSS**
+- Five-criteria strength scoring: length (≥ 8), lowercase, uppercase, digit, symbol.
+- Strength label and visual bar (Weak, Moderate, Strong).
+- Actionable suggestions for missing criteria.
+- Hash generation:
+  - MD5 (educational, not for storage)
+  - SHA‑256 (educational, not for storage)
+  - bcrypt (adaptive, salted; recommended)
+- One-click “Copy” for each hash.
+- Responsive, minimal UI.
 
 ---
 
-### ⚙️ Technologies Used
+## Tech stack
 
-* **Python 3**
-* **Flask** (for the web app)
-* **HTML + CSS** (for the frontend)
-
----
-
-### 🧩 How It Works
-
-1. User enters a password in the website.
-2. Flask sends the password to Python backend.
-3. The backend runs the strength check using logic like:
-
-   ```python
-   if any(c.islower() for c in password):
-       score += 1
-   ```
-4. The result is shown with a **colored bar** and **text** like “Weak ❌”, “Moderate ⚠️”, or “Strong ✅”.
+- Python 3.8+
+- Flask
+- hashlib (MD5, SHA‑256)
+- bcrypt (secure hashing)
+- HTML5, CSS3, vanilla JS
 
 ---
 
-### 🖥️ How to Run
+## Installation
 
-1. Install Flask:
-
-   ```
-   pip install flask
-   ```
-2. Run the app:
-
-   ```
-   python app.py
-   ```
-3. Open your browser and go to:
-
-   ```
-   http://127.0.0.1:5000/
-   ```
+optional: python -m venv .venv && source .venv/bin/activate # macOS/Linux
+optional: .venv\Scripts\activate # Windows
+pip install flask bcrypt
 
 ---
 
-### 🧰 Folder Structure
+## Run
 
-```
+python app.py
+
+Then open: http://127.0.0.1:5050/
+
+---
+
+## Usage
+
+- Enter a password and submit.
+- See strength label, score (/5), animated bar, and suggestions.
+- Scroll to “Generated Hashes” to copy MD5, SHA‑256, and bcrypt outputs.
+
+---
+
+## What the checker evaluates
+
+- +1 if length ≥ 8  
+- +1 if contains lowercase  
+- +1 if contains uppercase  
+- +1 if contains digits  
+- +1 if contains symbols
+
+Score mapping:
+- 0–2 = Weak
+- 3–4 = Moderate
+- 5 = Strong
+
+---
+
+## Security notes
+
+- Do not store or log plaintext passwords.
+- Do not use MD5 or SHA‑256 alone for password storage.
+- Use adaptive, salted hashes (bcrypt, Argon2, PBKDF2).
+- bcrypt output changes each run (random salt); verify with `bcrypt.checkpw()`.
+
+Verify bcrypt on login:
+
+bcrypt.checkpw(plaintext.encode(), stored_hash.encode())
+
+---
+
+## Project structure
+
 password_checker/
-│
-├── app.py                # Main Flask backend
-├── static/
-│   ├── style.css         # Bar colors and design
-│
-├── templates/
-│   ├── index.html        # Frontend form
-│
-└── README.md             # Project info
-```
+├─ app.py # Flask route, strength logic, hash generation
+├─ templates/
+│ └─ index.html # Form, results, suggestions, hashes
+└─ static/
+└─ style.css # UI styles and animations
 
 ---
 
-### 🧠 What I Learned
+## Roadmap (next)
 
-* How to use **Python logic** for password checking
-* How to make a simple **Flask web app**
-* How to use **HTML and CSS** for styling
-* How backend and frontend **work together**
+- Add Argon2 / PBKDF2 options.
+- “Have I Been Pwned” breach check (k-anonymity).
+- Common password blacklist and entropy hints.
+- Built-in password generator.
+
+---
+
+## License
+
+MIT
